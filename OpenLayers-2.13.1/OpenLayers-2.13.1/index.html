@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MapsJS</title>
+  </head>
+  <body>
+    <section>
+      <!-- Por alguna razón al quitar el style deja de funcionar -->
+      <div id="Map" style="height: 500px">
+        <input type="text" id="name" placeholder="Nombre" />
+        <input type="number" id="lat" placeholder="Latitud" />
+        <input type="number" id="lon" placeholder="Longitud" />
+        <button onclick="addMarker()">Agregar marcador</button>
+      </div>
+      <script src="OpenLayers.js"></script>
+      <script>
+        map = new OpenLayers.Map("Map");
+        map.addLayer(new OpenLayers.Layer.OSM());
+
+        //Ex1
+        //Colocamos una latitud y longitud concreta para que el mapa este centrado, en este caso Barcelona
+        //Posteriormert al ser vizaulizado el mapa estara centrado en Barcelona
+        var lonLat = new OpenLayers.LonLat(2.15899, 41.38879).transform(
+          new OpenLayers.Projection("EPSG:4326"), // transform from WGS 1984
+          map.getProjectionObject() // to Spherical Mercator Projection
+        );
+
+        //Ex2
+        //Creamos nueva varaible. con longitud y latitud, que luego sera llamada y visualizada
+        //marcador
+        var firstMark = new OpenLayers.LonLat(2.167012, 41.392487).transform(
+          new OpenLayers.Projection("EPSG:4326"), // transform from WGS 1984
+          map.getProjectionObject() // to Spherical Mercator Projection
+        );
+
+        //Especificamos el zoom que ha de hacer al mapa en las zonas especificadas
+        var zoom = 12;
+
+        //Aqui se crea la varaible que sera utiliza luego par añadir los marcadores
+        var markers = new OpenLayers.Layer.Markers("Markers");
+        map.addLayer(markers);
+        //Ex3
+        //Varaible a la que se le pasa el primer marcador para que muestre información
+        var marker = new OpenLayers.Marker(firstMark);
+        marker.events.register("mousedown", marker, function (popup) {
+          popup = this.popup;
+          if (popup == null) {
+            popup = new OpenLayers.Popup(
+              "popup",
+              this.lonlat,
+              new OpenLayers.Size(200, 50),
+              "IES Jaume Balmes ",
+              "   Pau Claris, 121 / Consell de Cent, 361",
+              true
+            );
+            this.popup = popup;
+            map.addPopup(popup);
+          } else {
+            popup.toggle();
+          }
+        });
+
+        function addMarker() {
+          var name = document.getElementById("name").value;
+          var lat = parseFloat(document.getElementById("lat").value);
+          var lon = parseFloat(document.getElementById("lon").value);
+
+          var addMark = new OpenLayers.LonLat(lon, lat).transform(
+            new OpenLayers.Projection("EPSG:4326"),
+            map.getProjectionObject()
+          );
+
+          var marker = new OpenLayers.Marker(addMark);
+          marker.events.register("mousedown", marker, function () {
+            var popup = new OpenLayers.Popup(
+              "popup",
+              addMark,
+              new OpenLayers.Size(200, 50),
+              "<div>" + name + "</div>",
+              true
+            );
+            map.addPopup(popup);
+          });
+          markers.addMarker(marker);
+          map.setCenter(addMark, 13);
+        }
+
+        //Usamos la variable anteriormente creada a la que le pasamos el var que sera un maracador
+        markers.addMarker(marker);
+        map.setCenter(lonLat, zoom);
+      </script>
+    </section>
+  </body>
+</html>
